@@ -12,43 +12,82 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
 )
 
-cap = cv2.VideoCapture(0)
+ultimo_envio = 0
+
+
+def conectar_camara():
+
+    while True:
+        cap = cv2.VideoCapture(0)
+
+        if cap.isOpened():
+            print("Camara conectada")
+            return cap
+
+        print("No se pudo conectar la camara. Reintentando...")
+        time.sleep(2)
+
+
+cap = conectar_camara()
 
 while True:
-    ret, frame = cap.read()
+    try:
+        ret, frame = cap.read()
 
-    if not ret:
-        print("No se pudo leer la camara")
-        break
+        if not ret:
+            print("Camara desconectada")
 
-    results = model(frame)
+            cap.release()
 
-    annotated_frame = results[0].plot()
+            time.sleep(2)
 
-    for result in results:
-        for box in result.boxes:
-            cls = int(box.cls[0])
-            conf = float(box.conf[0])
+            cap = conectar_camara()
 
-            if conf < 0.5:
-                continue
+            continue
 
-            objeto = model.names[cls]
+        results = model(frame)
 
-            data = {
-                "objeto": objeto,
-                "confidence": round(conf, 2),
-                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-            }
+        annotated_frame = results[0].plot()
 
-            print(data)
+        for result in results:
+            for box in result.boxes:
+                cls = int(box.cls[0])
+                conf = float(box.conf[0])
 
-            producer.send("detecciones", data)
+                if conf < 0.75:
+                    continue
 
-    cv2.imshow("Kafka Vision", annotated_frame)
+                objeto = model.names[cls]
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
+                # Solo personas
+                if objeto != "person":
+                    continue
+
+                # Evitar spam Kafka
+                if time.time() - ultimo_envio < 2:
+                    continue
+
+                data = {
+                    "objeto": objeto,
+                    "confidence": round(conf, 2),
+                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                }
+
+                print(data)
+
+                producer.send("detecciones", data)
+
+                ultimo_envio = time.time()
+
+        cv2.imshow("Kafka", annotated_frame)
+
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+
+    except Exception as e:
+        print("ERROR:", e)
+
+        time.sleep(2)
 
 cap.release()
 cv2.destroyAllWindows()
