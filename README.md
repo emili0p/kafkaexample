@@ -1,6 +1,15 @@
-# Kafka example
+##  Demo del sistema
 
-sistema de deteccion de objetos en tiempo real usando:
+Aquí se muestran ejecuciones del programa en tiempo real:
+
+![Ejecución 1](assets/santi1.jpeg)
+Mi compañero santiago, no yo
+![Ejecución 2](assets/santi2.jpeg)
+el programa detectando un celular
+
+## Kafka example
+
+Sistema de detección de objetos en tiempo real usando:
 
 - Python
 - OpenCV
@@ -9,28 +18,25 @@ sistema de deteccion de objetos en tiempo real usando:
 
 ## Arquitectura
 
-Camara -> YOLO -> Kafka -> Consumer
+Camara → YOLO → Kafka → Consumer
 
-## Arquitectura
+## Instalación
 
-instalar requirments con pip install -r requirements.txt
+Instalar requirements:
 
+pip install -r requirements.txt
 
 ## Ejecutar
 
-### Iniciar Kafka
+```bash
+
 
 ./start-kafka.sh
 
-### Crear topic
-
+## Crear topic
 ./topic.sh
-
-### Consumer
-
+Consumer
 ./consumer.sh
-
-### Producer
-
+Producer
 source venv/bin/activate
 python producer.py
