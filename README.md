@@ -22,21 +22,18 @@ Camara → YOLO → Kafka → Consumer
 
 ## Instalación
 
-Instalar requirements:
-
 pip install -r requirements.txt
 
 ## Ejecutar
-
-```bash
-
 
 ./start-kafka.sh
 
 ## Crear topic
 ./topic.sh
-Consumer
+
+## Consumer
 ./consumer.sh
-Producer
+
+## Producer
 source venv/bin/activate
 python producer.py
